@@ -1,6 +1,7 @@
 package com.backend.reservation.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,13 +15,17 @@ public class AvailabilitySegment {
 
     @ManyToOne
     @JoinColumn(name = "provider_id", nullable = false)
+    @Getter
     private Provider provider;
 
+    @Getter
     private LocalDate date;
+    @Getter
     private LocalTime startTime;
     private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
+    @Getter
     private AvailabilityStatus status;
 
     public AvailabilitySegment() {
