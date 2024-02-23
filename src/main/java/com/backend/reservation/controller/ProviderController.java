@@ -1,6 +1,6 @@
 package com.backend.reservation.controller;
 
-import com.backend.reservation.model.AvailabilitySegment;
+import com.backend.reservation.model.AppointmentSlot;
 import com.backend.reservation.model.AvailabilityStatus;
 import com.backend.reservation.model.Provider;
 import com.backend.reservation.model.ProviderAvailabilityRequest;
@@ -8,12 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.backend.reservation.repository.AvailabilitySegmentRepository;
+import com.backend.reservation.repository.AppointmentRepository;
 import com.backend.reservation.repository.ProviderRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 @RestController
 public class ProviderController {
@@ -22,7 +21,7 @@ public class ProviderController {
     private ProviderRepository providerRepository;
 
     @Autowired
-    private AvailabilitySegmentRepository availabilitySegmentRepository;
+    private AppointmentRepository appointmentRepository;
 
     @PostMapping("/provider")
     public ResponseEntity<?> addProviderAndAvailability(@RequestBody ProviderAvailabilityRequest request){
@@ -42,12 +41,12 @@ public class ProviderController {
 
         provider = providerRepository.save(provider);
 
-
         LocalTime startTime = request.getStartTime();
+        LocalDate date = request.getDate();
 
-        while(!startTime.isAfter(request.getEndTime())){
-            AvailabilitySegment segment = new AvailabilitySegment(provider,request.getDate(), startTime, AvailabilityStatus.AVAILABLE);
-            availabilitySegmentRepository.save(segment);
+        while(!startTime.isAfter(request.getEndTime().minusMinutes(15))){
+            AppointmentSlot segment = new AppointmentSlot(provider, date, date.atTime(startTime), AvailabilityStatus.AVAILABLE);
+            appointmentRepository.save(segment);
             startTime = startTime.plusMinutes(15);
         }
 
@@ -55,34 +54,13 @@ public class ProviderController {
 
     }
 
-    @GetMapping("/availability/{providerId}")
-    public ResponseEntity<?> getProviderAvailability(@PathVariable Long providerId){
-        List<AvailabilitySegment> segments = availabilitySegmentRepository.findByProviderId(providerId);
-        if(segments.isEmpty()){
-            return new ResponseEntity<>("No availability for this provider.", HttpStatus.NOT_FOUND);
+    @GetMapping("/provider/{providerId}")
+    public ResponseEntity<?> getProvider(@PathVariable Long providerId){
+        Provider provider = providerRepository.getReferenceById(providerId);
+        if (provider == null){
+            return new ResponseEntity<>("No Provider Found", HttpStatus.NOT_FOUND);
         }
-        return ResponseEntity.ok(segments);
+        return ResponseEntity.ok(provider);
+
     }
-
-    @GetMapping("/availabilities/{date}")
-    public ResponseEntity<?> getAvailabilityByDate(@PathVariable LocalDate date){
-        List<AvailabilitySegment> segments = availabilitySegmentRepository.findByDate(date);
-        if(segments.isEmpty()){
-            return new ResponseEntity<>("No availability for this Date: " + date.toString(), HttpStatus.NOT_FOUND);
-        }
-        return ResponseEntity.ok(segments);
-    }
-
-
-    @GetMapping("/availabilities")
-    public ResponseEntity<?> getAllAvailability(){
-        return ResponseEntity.ok(availabilitySegmentRepository.findAll());
-    }
-
-
-
-
-
-
-
 }

@@ -1,16 +1,21 @@
 package com.backend.reservation.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
-public class AvailabilitySegment {
+public class AppointmentSlot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
     private long id;
 
     @ManyToOne
@@ -20,22 +25,29 @@ public class AvailabilitySegment {
 
     @Getter
     private LocalDate date;
+
     @Getter
-    private LocalTime startTime;
-    private LocalTime endTime;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalDateTime appointmentTime;
 
     @Enumerated(EnumType.STRING)
     @Getter
+    @Setter
     private AvailabilityStatus status;
 
-    public AvailabilitySegment() {
+    @Getter
+    @Setter
+    @JsonIgnore
+    private LocalDateTime reservationTime;
+
+    public AppointmentSlot() {
 
     }
 
-    public AvailabilitySegment(Provider provider, LocalDate date, LocalTime startTime,AvailabilityStatus status){
+    public AppointmentSlot(Provider provider, LocalDate date, LocalDateTime appointmentTime, AvailabilityStatus status){
         this.provider = provider;
         this.date = date;
-        this.startTime = startTime;
+        this.appointmentTime = appointmentTime;
         this.status = status;
     }
 }
