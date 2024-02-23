@@ -1,4 +1,4 @@
-package controller;
+package com.backend.reservation.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
