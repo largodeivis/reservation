@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface AvailabilitySegmentRepository extends JpaRepository<AvailabilitySegment, UUID> {
+public interface AvailabilitySegmentRepository extends JpaRepository<AvailabilitySegment, long> {
     List<AvailabilitySegment> findByProviderName(String providerName);
 }
