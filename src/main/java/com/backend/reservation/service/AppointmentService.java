@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,16 +43,18 @@ public class AppointmentService implements IAppointmentService {
             if(appointment.getAppointmentTime().isBefore(LocalDateTime.now().plusHours(24))){
                 return "Unable to reserve. Reservations have to be made 24 hours in advance.";
             } else {
+                String success = "Appointment " + appointmentId + " reserved.\nDate: " + appointment.getDate() +
+                        "\nTime: " + appointment.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm"));
                 if (appointment.getStatus().equals(AvailabilityStatus.AVAILABLE)) {
                     appointment.setStatus(AvailabilityStatus.RESERVED);
                     appointment.setReservationTime(LocalDateTime.now());
                     appointmentRepository.save(appointment);
-                    return "Appointment " + appointmentId + " reserved.";
+                    return success;
                 } else if ((appointment.getStatus().equals(AvailabilityStatus.RESERVED)) &&
                         (LocalDateTime.now().isAfter(appointment.getReservationTime().get().plusMinutes(30)))) {
                     appointment.setReservationTime(LocalDateTime.now());
                     appointmentRepository.save(appointment);
-                    return "Appointment " + appointmentId + " reserved.";
+                    return success;
                 } else {
                     return "Appointment " + appointmentId + " is unavailable for reservation.";
                 }
@@ -77,7 +80,8 @@ public class AppointmentService implements IAppointmentService {
                 } else {
                     appointment.setStatus(AvailabilityStatus.CONFIRMED);
                     appointmentRepository.save(appointment);
-                    return "Appointment " + appointmentId + " confirmed!";
+                    return "Appointment " + appointmentId + " confirmed!\nDate: " + appointment.getDate() + "\nTime: " +
+                            appointment.getAppointmentTime().format(DateTimeFormatter.ofPattern("HH:mm"));
                 }
             } else {
                 return "Appointment " + appointmentId + " is already confirmed.";
