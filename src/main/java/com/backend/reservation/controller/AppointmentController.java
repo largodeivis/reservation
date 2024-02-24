@@ -63,7 +63,7 @@ public class AppointmentController {
     public ResponseEntity<?> getAllConfirmedAppointments(){
         List<AppointmentSlot> confirmedAppointments = appointmentService.getAllConfirmedAppointments();
         if(confirmedAppointments.isEmpty()){
-            return ResponseEntity.ok("No reserved appointments");
+            return ResponseEntity.ok("No confirmed appointments");
         }
         return ResponseEntity.ok(confirmedAppointments);
 

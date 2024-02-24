@@ -36,10 +36,9 @@ public class AppointmentSlot {
     @Setter
     private AvailabilityStatus status;
 
-    @Getter
     @Setter
     @JsonIgnore
-    private Optional<LocalDateTime> reservationTime;
+    private LocalDateTime reservationTime;
 
     public AppointmentSlot() {
 
@@ -50,5 +49,9 @@ public class AppointmentSlot {
         this.date = date;
         this.appointmentTime = appointmentTime;
         this.status = status;
+    }
+
+    public Optional<LocalDateTime> getReservationTime(){
+        return Optional.ofNullable(reservationTime);
     }
 }

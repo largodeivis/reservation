@@ -28,7 +28,7 @@ public class AppointmentService implements IAppointmentService {
         for(AppointmentSlot appointment : reservedAppointments){
             if(!appointment.getReservationTime().isPresent() || LocalDateTime.now().isAfter(appointment.getReservationTime().get().plusMinutes(30))){
                 appointment.setStatus(AvailabilityStatus.AVAILABLE);
-                appointment.setReservationTime(Optional.empty());
+                appointment.setReservationTime(null);
                 appointmentRepository.save(appointment);
             }
         }
@@ -46,12 +46,12 @@ public class AppointmentService implements IAppointmentService {
             } else {
                 if (appointment.getStatus().equals(AvailabilityStatus.AVAILABLE)) {
                     appointment.setStatus(AvailabilityStatus.RESERVED);
-                    appointment.setReservationTime(Optional.of(LocalDateTime.now()));
+                    appointment.setReservationTime(LocalDateTime.now());
                     appointmentRepository.save(appointment);
                     return "Appointment " + appointmentId + " reserved.";
                 } else if ((appointment.getStatus().equals(AvailabilityStatus.RESERVED)) &&
                         (LocalDateTime.now().isAfter(appointment.getReservationTime().get().plusMinutes(30)))) {
-                    appointment.setReservationTime(Optional.of(LocalDateTime.now()));
+                    appointment.setReservationTime(LocalDateTime.now());
                     appointmentRepository.save(appointment);
                     return "Appointment " + appointmentId + " reserved.";
                 } else {
@@ -73,7 +73,7 @@ public class AppointmentService implements IAppointmentService {
             } else if (appointment.getStatus().equals(AvailabilityStatus.RESERVED)) {
                 if (appointment.getReservationTime().isEmpty() || (LocalDateTime.now().isAfter(appointment.getReservationTime().get().plusMinutes(30)))) {
                     appointment.setStatus(AvailabilityStatus.AVAILABLE);
-                    appointment.setReservationTime(Optional.empty());
+                    appointment.setReservationTime(null);
                     appointmentRepository.save(appointment);
                     return "Unable to confirm " + appointmentId + ".This appointment is expired.";
                 } else {
