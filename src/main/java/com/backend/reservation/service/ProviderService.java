@@ -3,12 +3,9 @@ package com.backend.reservation.service;
 import com.backend.reservation.model.AppointmentSlot;
 import com.backend.reservation.model.AvailabilityStatus;
 import com.backend.reservation.model.Provider;
-import com.backend.reservation.model.ProviderAvailabilityRequest;
 import com.backend.reservation.repository.AppointmentRepository;
 import com.backend.reservation.repository.ProviderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;

@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(ProviderController.class)
-public class ProviderControllerTest {
+public class ProviderControllerTests {
 
     @Autowired
     private MockMvc mockMvc;

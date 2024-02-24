@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @WebMvcTest(AppointmentController.class)
-public class AppointmentControllerTest {
+public class AppointmentControllerTests {
 
     @Autowired
     private MockMvc mockMvc;

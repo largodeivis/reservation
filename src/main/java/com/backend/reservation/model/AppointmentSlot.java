@@ -27,6 +27,7 @@ public class AppointmentSlot {
     private LocalDate date;
 
     @Getter
+    @Setter
     @JsonFormat(pattern = "HH:mm")
     private LocalDateTime appointmentTime;
 
