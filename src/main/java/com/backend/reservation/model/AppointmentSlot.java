@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Optional;
 
 @Entity
 public class AppointmentSlot {
@@ -38,7 +39,7 @@ public class AppointmentSlot {
     @Getter
     @Setter
     @JsonIgnore
-    private LocalDateTime reservationTime;
+    private Optional<LocalDateTime> reservationTime;
 
     public AppointmentSlot() {
 

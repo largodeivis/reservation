@@ -3,6 +3,7 @@ package com.backend.reservation.controller;
 import com.backend.reservation.model.AppointmentSlot;
 import com.backend.reservation.model.AvailabilityStatus;
 import com.backend.reservation.repository.AppointmentRepository;
+import com.backend.reservation.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,20 +23,18 @@ public class AppointmentController {
     @Autowired
     private AppointmentRepository appointmentRepository;
 
-    @GetMapping("/appointments/{providerId}")
-    public ResponseEntity<?> getProviderAppointments(@PathVariable Long providerId){
-        List<AppointmentSlot> segments = appointmentRepository.findByProviderId(providerId);
-        if(segments.isEmpty()){
-            return new ResponseEntity<>("No availability for this provider.", HttpStatus.NOT_FOUND);
-        }
-        return ResponseEntity.ok(segments);
+    private final AppointmentService appointmentService;
+
+    @Autowired
+    public AppointmentController(AppointmentService appointmentService){
+        this.appointmentService = appointmentService;
     }
 
-    @GetMapping("/appointments/{date}")
-    public ResponseEntity<?> getAppointmentsByDate(@PathVariable LocalDate date){
-        List<AppointmentSlot> segments = appointmentRepository.findByDate(date);
+    @GetMapping("/appointments/{providerId}")
+    public ResponseEntity<?> getProviderAppointments(@PathVariable Long providerId){
+        List<AppointmentSlot> segments = appointmentService.getProviderAppointments(providerId);
         if(segments.isEmpty()){
-            return new ResponseEntity<>("No availability for this Date: " + date.toString(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("No availability for this provider.", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(segments);
     }
@@ -43,16 +42,7 @@ public class AppointmentController {
 
     @GetMapping("/appointments")
     public ResponseEntity<?> getAllAvailableAppointments(){
-        List<AppointmentSlot> reservedAppointments = appointmentRepository.findByStatus(AvailabilityStatus.RESERVED);
-        for(AppointmentSlot appointment : reservedAppointments){
-            if(LocalDateTime.now().isAfter(appointment.getReservationTime().plusMinutes(30))){
-                appointment.setStatus(AvailabilityStatus.AVAILABLE);
-                appointment.setReservationTime(null);
-                appointmentRepository.save(appointment);
-            }
-        }
-
-        List<AppointmentSlot> availableAppointments = appointmentRepository.findAvailableAppointmentsAfter24Hours(LocalDateTime.now().plusHours(24));
+        List<AppointmentSlot> availableAppointments = appointmentService.getAllAvailableAppointments();
         if(availableAppointments.isEmpty()){
             return ResponseEntity.ok("No available appointments");
         }
@@ -60,62 +50,18 @@ public class AppointmentController {
     }
 
     @PostMapping("/appointments/reserve/{appointmentId}")
-    public ResponseEntity<?> reserveAppointment(@PathVariable long appointmentId){
-        Optional<AppointmentSlot> appointmentSlot = appointmentRepository.findById(appointmentId);
-        if(appointmentSlot.isPresent()) {
-            AppointmentSlot appointment = appointmentSlot.get();
-            if(appointment.getAppointmentTime().isBefore(LocalDateTime.now().plusHours(24))){
-                return ResponseEntity.ok("Unable to reserve. Reservations have to be made 24 hours in advance.");
-            } else {
-                if (appointment.getStatus().equals(AvailabilityStatus.AVAILABLE)) {
-                    appointment.setStatus(AvailabilityStatus.RESERVED);
-                    appointment.setReservationTime(LocalDateTime.now());
-                    appointmentRepository.save(appointment);
-                    return ResponseEntity.ok("Appointment " + appointmentId + " reserved.");
-                } else if ((appointment.getStatus().equals(AvailabilityStatus.RESERVED)) &&
-                        (LocalDateTime.now().isAfter(appointment.getReservationTime().plusMinutes(30)))) {
-                    appointment.setReservationTime(LocalDateTime.now());
-                    appointmentRepository.save(appointment);
-                    return ResponseEntity.ok("Appointment " + appointmentId + " reserved.");
-                } else {
-                    return ResponseEntity.ok("Appointment " + appointmentId + " is unavailable for reservation.");
-                }
-            }
-        } else {
-            return new ResponseEntity<>("This appointment doesn't exist.", HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<String> reserveAppointment(@PathVariable long appointmentId){
+        return ResponseEntity.ok(appointmentService.reserveAppointment(appointmentId));
     }
 
     @PostMapping("/appointments/confirm/{appointmentId}")
-    public ResponseEntity<?> confirmAppointment(@PathVariable long appointmentId){
-        Optional<AppointmentSlot> appointmentSlot = appointmentRepository.findById(appointmentId);
-
-        if(appointmentSlot.isPresent()) {
-            AppointmentSlot appointment = appointmentSlot.get();
-            if (appointment.getStatus().equals(AvailabilityStatus.AVAILABLE)) {
-                return ResponseEntity.ok("Unable to confirm " + appointmentId + ". It must be reserved first.");
-            } else if (appointment.getStatus().equals(AvailabilityStatus.RESERVED)) {
-                if ((LocalDateTime.now().isAfter(appointment.getReservationTime().plusMinutes(30)))) {
-                    appointment.setStatus(AvailabilityStatus.AVAILABLE);
-                    appointment.setReservationTime(null);
-                    appointmentRepository.save(appointment);
-                    return ResponseEntity.ok("Unable to confirm " + appointmentId + ".This appointment is expired.");
-                } else {
-                    appointment.setStatus(AvailabilityStatus.CONFIRMED);
-                    appointmentRepository.save(appointment);
-                    return ResponseEntity.ok("Appointment " + appointmentId + " confirmed!");
-                }
-            } else {
-                return ResponseEntity.ok("Appointment " + appointmentId + " is already confirmed.");
-            }
-        } else {
-            return new ResponseEntity<>("This appointment doesn't exist.", HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<String> confirmAppointment(@PathVariable long appointmentId){
+        return ResponseEntity.ok(appointmentService.confirmAppointment(appointmentId));
     }
 
     @GetMapping("/appointments/reserve")
     public ResponseEntity<?> getAllReservedAppointments(){
-        List<AppointmentSlot> reservedAppointments = appointmentRepository.findByStatus(AvailabilityStatus.RESERVED);
+        List<AppointmentSlot> reservedAppointments = appointmentService.getAllReservedAppointments();
         if(reservedAppointments.isEmpty()){
             return ResponseEntity.ok("No reserved appointments");
         }
@@ -125,7 +71,7 @@ public class AppointmentController {
 
     @GetMapping("/appointments/confirm")
     public ResponseEntity<?> getAllConfirmedAppointments(){
-        List<AppointmentSlot> confirmedAppointments = appointmentRepository.findByStatus(AvailabilityStatus.CONFIRMED);
+        List<AppointmentSlot> confirmedAppointments = appointmentService.getAllConfirmedAppointments();
         if(confirmedAppointments.isEmpty()){
             return ResponseEntity.ok("No reserved appointments");
         }
