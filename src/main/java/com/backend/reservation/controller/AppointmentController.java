@@ -1,8 +1,6 @@
 package com.backend.reservation.controller;
 
 import com.backend.reservation.model.AppointmentSlot;
-import com.backend.reservation.model.AvailabilityStatus;
-import com.backend.reservation.repository.AppointmentRepository;
 import com.backend.reservation.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,17 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class AppointmentController {
-
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-
     private final AppointmentService appointmentService;
 
     @Autowired
@@ -38,7 +29,6 @@ public class AppointmentController {
         }
         return ResponseEntity.ok(segments);
     }
-
 
     @GetMapping("/appointments")
     public ResponseEntity<?> getAllAvailableAppointments(){

@@ -1,27 +1,23 @@
 package com.backend.reservation.controller;
 
-import com.backend.reservation.model.AppointmentSlot;
-import com.backend.reservation.model.AvailabilityStatus;
 import com.backend.reservation.model.Provider;
 import com.backend.reservation.model.ProviderAvailabilityRequest;
+import com.backend.reservation.service.ProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.backend.reservation.repository.AppointmentRepository;
-import com.backend.reservation.repository.ProviderRepository;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.util.Optional;
 
 @RestController
 public class ProviderController {
+    private ProviderService providerService;
 
     @Autowired
-    private ProviderRepository providerRepository;
-
-    @Autowired
-    private AppointmentRepository appointmentRepository;
+    public ProviderController(ProviderService providerService){
+        this.providerService = providerService;
+    }
 
     @PostMapping("/provider")
     public ResponseEntity<?> addProviderAndAvailability(@RequestBody ProviderAvailabilityRequest request){
@@ -37,18 +33,7 @@ public class ProviderController {
             return new ResponseEntity<>("Date Can't be null", HttpStatus.BAD_REQUEST);
         }
 
-        Provider provider = new Provider(request.getName());
-
-        provider = providerRepository.save(provider);
-
-        LocalTime startTime = request.getStartTime();
-        LocalDate date = request.getDate();
-
-        while(!startTime.isAfter(request.getEndTime().minusMinutes(15))){
-            AppointmentSlot segment = new AppointmentSlot(provider, date, date.atTime(startTime), AvailabilityStatus.AVAILABLE);
-            appointmentRepository.save(segment);
-            startTime = startTime.plusMinutes(15);
-        }
+        Provider provider = providerService.addProviderAndAvailability(request.getName(), request.getDate(), request.getStartTime(), request.getEndTime());
 
         return ResponseEntity.ok(provider);
 
@@ -56,8 +41,8 @@ public class ProviderController {
 
     @GetMapping("/provider/{providerId}")
     public ResponseEntity<?> getProvider(@PathVariable Long providerId){
-        Provider provider = providerRepository.getReferenceById(providerId);
-        if (provider == null){
+        Optional<Provider> provider = providerService.getProvider(providerId);
+        if (provider.isEmpty()){
             return new ResponseEntity<>("No Provider Found", HttpStatus.NOT_FOUND);
         }
         return ResponseEntity.ok(provider);

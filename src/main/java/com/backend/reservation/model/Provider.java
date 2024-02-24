@@ -7,6 +7,7 @@ import lombok.Getter;
 public class Provider {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
     private long id;
 
     @Getter
