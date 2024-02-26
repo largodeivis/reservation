@@ -67,3 +67,14 @@ localhost:8080/appointments/confirm/1
 **Result**
 
 ![img_4.png](images/img_4.png)
+
+## Possible Enhancements
+
+1. UUIDs for Ids 
+2. Separate creating Providers and adding their availability
+3. Allow clients to log in
+4. Only clients who reserved an appointment should be able to confirm it
+5. Add caching layer when retrieving appointments
+6. View appointments by date
+7. View appointments by provider
+8. Add calendar service to choose dates 
